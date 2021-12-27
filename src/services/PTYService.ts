@@ -1,14 +1,15 @@
 import os from "os";
-import pty from "node-pty";
+// import pty from "node-pty";
+const pty = require("node-pty");
 import { Socket } from "socket.io";
 
 export class PTYService {
-  ptyProcess: pty.IPty | null;
+  ptyProcess: any;
   shell: string;
   socket: any;
   constructor(socket: Socket) {
     // Setting default terminals based on user os
-    this.shell = os.platform() === "win32" ? "powershell.exe" : "bash";
+    this.shell = os.platform() === "win32" ? "powershell.exe" : "zsh";
     this.ptyProcess = null;
     this.socket = socket;
 
@@ -20,6 +21,7 @@ export class PTYService {
    * Spawn an instance of pty with a selected shell.
    */
   startPtyProcess() {
+    console.log({ pty });
     this.ptyProcess = pty.spawn(this.shell, [], {
       name: "xterm-color",
       cwd: process.env.HOME, // Which path should terminal start
@@ -27,7 +29,7 @@ export class PTYService {
     } as any);
 
     // Add a "data" event listener.
-    this.ptyProcess.on("data", (data) => {
+    this.ptyProcess.on("data", (data: any) => {
       // deprecated, use onData
       // Whenever terminal generates any data, send that output to socket.io client
       this.sendToClient(data);
